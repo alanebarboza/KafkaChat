@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            background-color: #F0F2F5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .chat {
+            background-color: white;
+            box-shadow: 0px 1px 2px rgba(0,0,0,0.2);
+            margin: 20px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+            .chat h2 {
+                background-color: #4267B2;
+                color: white;
+                font-size: 20px;
+                margin: 0;
+                padding: 10px;
+            }
+
+        .messages {
+            height: 400px;
+            overflow-y: scroll;
+            padding: 10px;
+        }
+
+            .messages p {
+                background-color: #E9EBEE;
+                border-radius: 20px;
+                display: inline-block;
+                font-size: 16px;
+                margin: 5px;
+                padding: 10px;
+                max-width: 70%;
+                word-wrap: break-word;
+            }
+
+        .input-container {
+            display: flex;
+            margin-top: 10px;
+        }
+
+        input[type=text] {
+            border-radius: 20px;
+            border: none;
+            flex-grow: 1;
+            font-size: 16px;
+            padding: 10px;
+        }
+
+        button {
+            background-color: #4267B2;
+            border: none;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            margin-left: 10px;
+            padding: 10px;
+            width: 100px;
+        }
+
+        button:hover {
+            background-color: #3B5998;
+        }
+
+        input[type=text] {
+            border: 1px solid #CCC;
+        }
+    </style>
+</head>
+<body>
+    <header class="container">
+        <h2>Kafka Chat</h2>
+    </header>
+    <div class="container">
+        <div class="chat">
+            <h2>Alan</h2>
+            <div class="messages" id="Alan"></div>
+            <div class="input-container">
+                <input type="text" id="Alan-input" onkeypress="handleKeyPress(event, 'Alan')">
+                <button onclick="sendChat('Alan')">Enviar</button>
+            </div>
+        </div>
+        <div class="chat">
+            <h2>Janaina</h2>
+            <div class="messages" id="Janaina"></div>
+            <div class="input-container">
+                <input type="text" id="Janaina-input" onkeypress="handleKeyPress(event, 'Janaina')">
+                <button onclick="sendChat('Janaina')">Enviar</button>
+            </div>
+        </div>
+    </div>
+    <footer class="container">
+        <h2>Gitub - <a href="https://github.com/alanebarboza">Alan Barboza</a></h2>
+    </footer>
+    <script>
+        var position = "right";
+
+        function handleKeyPress(event, chatId) {
+            if (event.keyCode === 13) {
+                event.preventDefault();
+                sendChat(chatId);
+            }
+        }
+
+        function sendChat(chatId) {
+            var chatInput = document.getElementById(chatId + "-input");
+
+            UpdateChat(chatId, chatId, chatInput.value);
+            SendMessage(chatId, ReverseChatId(chatId), chatInput.value);
+
+            chatInput.value = "";
+        }
+
+        function UpdateChat(chatId, sender, message) {
+            var chatMessages = document.getElementById(chatId);
+            var newMessage = document.createElement("p");
+
+            //anãofunfo
+            position = (position == "left" ? "right" : "left")
+            newMessage.style.textAlign = position;
+
+            newMessage.innerHTML = sender + ": " + message;
+            chatMessages.appendChild(newMessage);
+            chatMessages.appendChild(document.createElement("br"));
+        }
+
+        function SendMessage(sender, receptor, value) {
+            const message = {
+                sender: sender,
+                receptor: receptor,
+                value: value
+            };
+
+            fetch("https://localhost:7041/api/Producer/SendMessage", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(message)
+            }).catch(error => console.error(error));
+        }
+
+        function ReverseChatId(chatId) {
+            return (chatId == "Alan" ? "Janaina" : "Alan");
+        }
+
+        setInterval(function () {
+            fetch("https://localhost:7041/api/Consumer/GetAllUnreadMessages")
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(function (message) {
+                        UpdateChat(message.receptor, message.sender, message.value);
+                    });
+                })
+                .catch(error => console.error(error));
+        }, 100);
+
+    </script>
+</body>
+</html>
