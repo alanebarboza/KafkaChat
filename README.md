@@ -3,7 +3,9 @@
 ## Descrição do Projeto
 <p align="center"> Uma aplicação em .Net core para um Chat em tempo real com Kafka. </p>
  <br>
- ![Preview](https://github.com/alanebarboza/KafkaChat/blob/main/Path/imagem.png)
+ 
+ ![Preview](https://github.com/alanebarboza/KafkaChat/blob/main/Preview.png)
+ 
  <br>
 ### Features
 
